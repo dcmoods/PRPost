@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-title>Posts</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row margin class="rowStyle">
+    <ion-button color="danger" fill="clear" (click)="addPhoto()">
+      <ion-icon name="images" ></ion-icon>
+    </ion-button>
+
+    <ion-input tpye="text" placeholder="Say something..." [(ngModel)]="text"></ion-input>
+
+    <ion-button color="danger" fill="clear" (click)="post()">
+      <ion-icon name="send"></ion-icon>
+    </ion-button>
+  </ion-row>
+  <ion-card *ngFor="let post of posts">
+      <ion-item-divider color="danger">
+        {{ post.data().owner_name }} says
+      </ion-item-divider>
+  
+      <ion-item text-wrap>
+        <ion-label text-wrap>
+          {{ post.data().text }}
+
+        </ion-label>
+      </ion-item>
+    <ion-row class="bottom-bar">
+      <ion-col>
+        <ion-button expand="full" icon-left clear size="small" color="danger" class="border-right">
+          <ion-icon name="thumbs-up"></ion-icon>
+          <small>12 likes</small>
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button expand="full" icon-left clear size="small" color="danger" class="border-right">
+          <ion-icon name="text"></ion-icon>
+          <small>12 comments</small>
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button expand="full" icon-left clear size="small" color="danger">
+          <small>{{ ago(post.created) }} ago</small>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-card>
+  <ion-infinite-scroll (ionInfinite)="loadMorePosts($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+</ion-content>

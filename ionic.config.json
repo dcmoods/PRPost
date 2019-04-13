@@ -1,6 +1,8 @@
 {
   "name": "PRPost",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular",
   "id": "93e0a41f"
 }

@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Platform, MenuController } from '@ionic/angular';
+import { Platform, MenuController, ToastController } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { Route } from '@angular/compiler/src/core';
 import { NavigationEnd, Router, RouterEvent } from '@angular/router';
+import * as firebase from 'firebase';
 
 @Component({
   selector: 'app-root',
@@ -19,23 +20,18 @@ export class AppComponent implements OnInit {
       icon: 'home',
     },
     {
-      title: 'List',
-      url: '/list',
+      title: 'Posts',
+      url: '/feed',
       icon: 'list'
     },
-    {
-      title: 'Logout',
-      url: '/logout',
-      icon: 'log-out'
-    }
   ];
 
   constructor(
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private menuCtrl: MenuController,
-    private router: Router
+    private router: Router,
+    private toastCtrl: ToastController
   ) {
     this.initializeApp();
   }
@@ -53,5 +49,20 @@ export class AppComponent implements OnInit {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
     });
+  }
+
+  logout(){
+    
+    firebase.auth().signOut().then(async () => {
+
+      let toast = await this.toastCtrl.create({
+        message: "You have been logged out.",
+        duration: 3000
+      });
+      await toast.present();
+
+      this.router.navigate(["/login"]);
+    });
+    
   }
 }
