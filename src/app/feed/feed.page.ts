@@ -34,6 +34,7 @@ export class FeedPage implements OnInit {
   pageSize: number = 10;
   cursor: any;
   infiniteEvent: any;
+  image: string;
 
   constructor(private afAuth: AngularFireAuth, private camera: Camera,
     private loadingCtrl: LoadingController, private toastCtrl: ToastController) { }
@@ -116,8 +117,6 @@ export class FeedPage implements OnInit {
   }
 
   refresh(event){
-    //this.posts = [];
-
     this.getPosts();
     event.complete();
     if(this.infiniteEvent){
@@ -132,8 +131,13 @@ export class FeedPage implements OnInit {
       owner: firebase.auth().currentUser.uid,
       owner_name: firebase.auth().currentUser.displayName
     }).then(async (doc) => {
-      console.log(doc)
+
+      if(this.image) {
+        await this.upload(doc.id);
+      } 
+
       this.text = "";
+      this.image = undefined;
 
       let toast = await this.toastCtrl.create({
         message: "Your post has been created.",
@@ -147,48 +151,6 @@ export class FeedPage implements OnInit {
     })
 
   }
-
-  // getPosts() {
-  //   // let loading = this.loadingCtrl.create({
-  //   //   content: "Loading Feed..."
-  //   // });
-  //   // loading.present();
-
-  //   this.postCollection = this.afs.collection<Post>("posts",
-  //     ref => ref.orderBy("created", "desc").startAfter(this.cursor).limit(this.pageSize));
-
-  //   //this.posts = this.postCollection.valueChanges();
-  //   this.posts = this.postCollection.snapshotChanges().pipe(
-  //     map(actions => actions.map(a => {
-  //       const data = a.payload.doc.data() as Post;
-  //       const id = a.payload.doc.id;
-  //       return { id, ...data };
-  //     }))
-  //   );
-  //   this.posts.subscribe(result => { this.cursor = result.length; });
-  // }
-
-  // loadMorePosts(event) {
-  //   this.postService.next();
-  //   event.target.complete();
-  // }
-  // async post() {
-  //   this.postCollection.add({
-  //     text: this.text,
-  //     created: firebase.firestore.FieldValue.serverTimestamp(),
-  //     owner: firebase.auth().currentUser.uid,
-  //     owner_name: firebase.auth().currentUser.displayName
-  //   }).then(async () => {
-  //     let toast = await this.toastCtrl.create({
-  //       message: "Your post has been created.",
-  //       duration: 3000
-  //     });
-  //     toast.present();
-  //   }).catch((err) => {
-  //     console.log(err);
-  //   })
-
-  // }
 
   addPhoto(){
    this.launchCamera();
@@ -208,14 +170,56 @@ export class FeedPage implements OnInit {
     }
 
     this.camera.getPicture(options).then((imageData) => {
-      // imageData is either a base64 encoded string or a file URI
-      // If it's base64 (DATA_URL):
-      console.log(imageData);
-      //let base64Image = 'data:image/jpeg;base64,' + imageData;
+      //console.log(imageData);
+      this.image = 'data:image/png;base64,' + imageData;
+
      }, (err) => {
       // Handle error
       console.log(err);
      });
+  }
+
+  upload(name: string){
+
+    return new Promise(async (resolve, reject) => {
+
+      let loading = await this.loadingCtrl.create({
+        message: "Uploading image...",
+        spinner: "bubbles"
+      });
+
+      loading.present();
+
+      let ref = firebase.storage().ref("postImages/" + name);
+
+      let uploadTask = ref.putString(this.image.split(',')[1], "base64");
+
+      uploadTask.on("state_changed", (taskSnapshot) => {
+        console.log(taskSnapshot);
+        //let percentage = taskSnapshot.bytesTransferred / taskSnapshot.totalBytes * 100;
+        //loading.setContent(percentage);
+
+      }, (error) => {
+        console.log(error);
+      }, () =>{
+        console.log("The upload completed.");
+  
+        uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+          firebase.firestore().collection("posts").doc(name).update({
+            image: url
+          }).then(() => {
+            loading.dismiss();
+            resolve();
+          }).catch((err) => {
+            loading.dismiss();
+            reject();
+          })
+        }).catch((err) => {
+          loading.dismiss();
+          reject();
+        })
+      })
+    })
   }
 
   ago(time) {
