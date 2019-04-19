@@ -4,6 +4,7 @@ import { ToastController, MenuController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ThrowStmt } from '@angular/compiler';
 
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -27,9 +28,9 @@ export class LoginPage implements OnInit {
           this.toastCtrl.create({
             message: "Welcome " + user.user.displayName,
             duration: 3000
-          }).then((toast) => toast.present());
+          }).then((toast) => toast.present());        
 
-          this.router.navigate(['/home'])
+          this.router.navigate(['/menu/posts'])
         })
         .catch((err) => {
           console.log(err);
@@ -39,6 +40,7 @@ export class LoginPage implements OnInit {
             duration: 3000
           }).then((toast) => toast.present());
         })
+
   }
 
   gotoSignup() {

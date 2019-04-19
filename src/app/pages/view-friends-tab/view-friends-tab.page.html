@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>View Friends</ion-title>
+  </ion-toolbar>
+</ion-header>
+ 
+<ion-content padding>
+    <!-- <ion-card *ngFor="let friend of currentFriends">
+        <ion-item-divider color="light">
+           
+        </ion-item-divider>
+        <ion-item text-wrap>
+          <ion-label text-wrap>
+            
+          </ion-label>
+        </ion-item>
+    </ion-card> -->
+
+    <ion-card *ngFor="let friend of friends | async">
+        <ion-card-header>
+            {{ friend.displayName }}
+        </ion-card-header>
+        <ion-card-content>
+          <ion-grid>
+            <ion-row class="ion-justify-content-between">
+              <ion-col class="ion-align-self-center" size="3">
+                <div>
+                    {{ friend.email }}
+                </div>
+              </ion-col>
+              <ion-col class="ion-align-self-center" size="3" class="ion-text-end">
+                <ion-button color="danger" fill="clear" (click)="removeFriend(friend)">
+                    <ion-icon name="trash"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+         
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+
+</ion-content>

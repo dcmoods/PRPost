@@ -24,6 +24,11 @@ export class AppComponent implements OnInit {
       url: '/feed',
       icon: 'list'
     },
+    {
+      title: 'Friends',
+      url: '/friends',
+      icon: 'people'
+    }
   ];
 
   constructor(

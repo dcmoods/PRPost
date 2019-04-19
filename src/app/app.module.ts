@@ -14,6 +14,7 @@ import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { environment } from '../environments/environment';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { NgAisModule } from 'angular-instantsearch';
 
 @NgModule({
   declarations: [AppComponent],
@@ -24,7 +25,8 @@ import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, 
-    AngularFireAuthModule, 
+    AngularFireAuthModule,
+    NgAisModule, 
   ],
   providers: [
     StatusBar,

@@ -1,8 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { ToastController, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
+import { Chance } from 'chance';
+
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.page.html',
@@ -16,6 +21,7 @@ export class SignupPage implements OnInit {
 
   constructor(
     private afAuth: AngularFireAuth,
+    private afs: AngularFirestore,
     private toastCtrl: ToastController,
     private router: Router, 
     private location: Location,
@@ -25,7 +31,6 @@ export class SignupPage implements OnInit {
   }
 
   signUp() {
-    // console.log(this.name, this.email, this.password);
     this.afAuth.auth
      .createUserWithEmailAndPassword(this.email, this.password)
        .then((data) => {
@@ -36,7 +41,7 @@ export class SignupPage implements OnInit {
            photoURL: ""
          }).then(async () => {
            console.log("Profile updated.");
- 
+
           let alert = await this.alertCtrl.create({
              header: "Account Created",
              message: "Your acount has been created successfully.",
@@ -51,11 +56,30 @@ export class SignupPage implements OnInit {
            });
            alert.present();
  
+           const user =  {
+            userId: newUser.uid,
+            email: newUser.email,
+            displayName: newUser.displayName,
+            created: firebase.firestore.FieldValue.serverTimestamp(),
+            owner: newUser.uid,
+          }
+
+          this.afs.collection('users').doc(user.owner).set(user);
+          // firebase.firestore().collection("users").add({
+          //   userId: newUser.uid,
+          //   email: newUser.email,
+          //   displayName: newUser.displayName,
+          //   created: firebase.firestore.FieldValue.serverTimestamp(),
+          //   owner: newUser.uid,
+          // }).then(async (doc) => {
+          //   console.log(doc)
+          // }).catch((err) => {
+          //   console.log(err)
+          // })
          }).catch((err) => {
            console.log(err);
          });
- 
-         
+
        })
        .catch(async (err) => {
          console.log(err);
@@ -70,4 +94,49 @@ export class SignupPage implements OnInit {
    goback() {
      this.location.back();
    }
+
+   addUser() {
+    const chance = new Chance();
+    this.afAuth.auth
+     .createUserWithEmailAndPassword(chance.email(), '123456')
+       .then((data) => {
+ 
+         let newUser: firebase.User = data.user;
+         newUser.updateProfile({
+           displayName: chance.name(),
+           photoURL: chance.avatar({protocol: 'https'})
+         }).then(async () => {
+           console.log("Profile updated.");
+          
+           const user =  {
+             userId: newUser.uid,
+             email: newUser.email,
+             displayName: newUser.displayName,
+             created: firebase.firestore.FieldValue.serverTimestamp(),
+             owner: newUser.uid,
+           }
+
+           this.afs.collection('users').doc(user.owner).set(user);
+          // firebase.firestore().collection("users").add({
+          //   userId: newUser.uid,
+          //   email: newUser.email,
+          //   displayName: newUser.displayName,
+          //   created: firebase.firestore.FieldValue.serverTimestamp(),
+          //   owner: newUser.uid,
+          // }).then(async (doc) => {
+          //   console.log(doc)
+          // }).catch((err) => {
+          //   console.log(err)
+          // })
+
+         }).catch((err) => {
+           console.log(err);
+         });
+         
+       })
+       .catch(async (err) => {
+         console.log(err);
+       });
+   }
+    
 }

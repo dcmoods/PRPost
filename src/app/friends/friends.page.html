@@ -1,0 +1,53 @@
+ <ion-header>
+  <ion-toolbar color="dark">
+    <ion-title>Friends</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <ais-instantsearch [config]="searchConfig">
+    <ion-row>
+      <ion-col>
+        <ais-search-box (change)="searchChanged($event)"></ais-search-box>
+
+      </ion-col>
+    </ion-row>
+   
+    <ais-hits >
+        <ng-template let-hits="hits" let-results="results">
+
+          <p class="info" *ngIf="hits.length === 0">
+              No results were found for {{results.query}}.
+          </p>
+
+          <div *ngFor="let hit of hits">
+            <ion-card>
+              <ion-card-header>
+                <ais-highlight attribute="displayName" [hit]="hit">
+                </ais-highlight>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-grid>
+                  <ion-row class="ion-justify-content-between">
+                    <ion-col class="ion-align-self-center" size="3">
+                      <div>
+                        {{ hit.email }}
+                      </div>
+                    </ion-col>
+                    <ion-col class="ion-align-self-center" size="3" class="ion-text-end">
+                      <ion-button color="success" fill="clear" (click)="addFriend(hit.userId)" >
+                        <ion-icon name="person-add"></ion-icon>
+                      </ion-button>
+                    </ion-col>
+                  </ion-row>
+               
+                </ion-grid>
+              </ion-card-content>
+            </ion-card>
+            </div>
+        </ng-template>
+      </ais-hits>
+  </ais-instantsearch>
+</ion-content> 
+
