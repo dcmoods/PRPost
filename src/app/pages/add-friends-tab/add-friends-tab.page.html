@@ -38,8 +38,12 @@
                             </div>
                           </ion-col>
                           <ion-col class="ion-align-self-center" size="3" class="ion-text-end">
-                            <ion-button color="success" fill="clear" (click)="addFriend(hit.userId)" *ngIf="currentFriends.indexOf(hit.userId)===-1">
+                            <ion-button color="success" fill="clear" (click)="addFriend(hit)" *ngIf="alreadyFriends(hit.userId)">
                               <ion-icon name="person-add"></ion-icon>
+                            </ion-button>
+
+                            <ion-button color="danger" fill="clear" (click)="removeFriend(hit.userId)" *ngIf="!alreadyFriends(hit.userId)">
+                              <ion-icon name="trash"></ion-icon>
                             </ion-button>
                           </ion-col>
                         </ion-row>

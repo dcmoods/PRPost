@@ -8,17 +8,7 @@
 </ion-header>
  
 <ion-content padding>
-    <!-- <ion-card *ngFor="let friend of currentFriends">
-        <ion-item-divider color="light">
-           
-        </ion-item-divider>
-        <ion-item text-wrap>
-          <ion-label text-wrap>
-            
-          </ion-label>
-        </ion-item>
-    </ion-card> -->
-
+    
     <ion-card *ngFor="let friend of friends | async">
         <ion-card-header>
             {{ friend.displayName }}
@@ -32,9 +22,9 @@
                 </div>
               </ion-col>
               <ion-col class="ion-align-self-center" size="3" class="ion-text-end">
-                <ion-button color="danger" fill="clear" (click)="removeFriend(friend)">
+                <!-- <ion-button color="danger" fill="clear" (click)="removeFriend(friend)">
                     <ion-icon name="trash"></ion-icon>
-                </ion-button>
+                </ion-button> -->
               </ion-col>
             </ion-row>
          

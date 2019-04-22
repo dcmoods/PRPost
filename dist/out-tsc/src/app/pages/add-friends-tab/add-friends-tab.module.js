@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { NgAisModule } from 'angular-instantsearch';
 import { IonicModule } from '@ionic/angular';
 import { AddFriendsTabPage } from './add-friends-tab.page';
 var routes = [
@@ -20,7 +21,8 @@ var AddFriendsTabPageModule = /** @class */ (function () {
                 CommonModule,
                 FormsModule,
                 IonicModule,
-                RouterModule.forChild(routes)
+                RouterModule.forChild(routes),
+                NgAisModule
             ],
             declarations: [AddFriendsTabPage]
         })

@@ -32,8 +32,7 @@ var SignupPage = /** @class */ (function () {
                 displayName: _this.name,
                 photoURL: ""
             }).then(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                var alert;
-                var _this = this;
+                var alert, user;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
@@ -53,20 +52,14 @@ var SignupPage = /** @class */ (function () {
                         case 1:
                             alert = _a.sent();
                             alert.present();
-                            firebase.firestore().collection("users").add({
+                            user = {
                                 userId: newUser.uid,
                                 email: newUser.email,
                                 displayName: newUser.displayName,
                                 created: firebase.firestore.FieldValue.serverTimestamp(),
                                 owner: newUser.uid,
-                            }).then(function (doc) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                return tslib_1.__generator(this, function (_a) {
-                                    console.log(doc);
-                                    return [2 /*return*/];
-                                });
-                            }); }).catch(function (err) {
-                                console.log(err);
-                            });
+                            };
+                            this.afs.collection('users').doc(user.owner).set(user);
                             return [2 /*return*/];
                     }
                 });

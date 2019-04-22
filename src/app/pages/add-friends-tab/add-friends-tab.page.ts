@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument,  } from '@angular/fire/firestore';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import { environment } from '../../../environments/environment';
 import { UseExistingWebDriver } from 'protractor/built/driverProviders';
 import { userInfo } from 'os';
+import { map, switchMap } from 'rxjs/operators';
 
 export interface User { 
   userId: string; 
@@ -19,12 +20,14 @@ export interface User {
 }
 
 export interface Friend { 
+  id: string,
   userId: string; 
   displayName: string;
   email: string;
-  owner: string;
   created: firebase.firestore.FieldValue;
 }
+
+export interface FriendId extends Friend { id: string; }
 
 @Component({
   selector: 'app-add-friends-tab',
@@ -37,8 +40,11 @@ export interface Friend {
 export class AddFriendsTabPage implements OnInit {
 
   private userDoc: AngularFirestoreDocument<User>;
-  user: Observable<User>;
-  friends: Observable<Friend[]>;
+  private usersCollection: AngularFirestoreCollection<User>;
+  user: Observable<User[]>;
+
+  private friendsCollection: AngularFirestoreCollection<Friend>;
+  friends: Observable<FriendId[]>;
   
   searchConfig = {
     ...environment.algolia,
@@ -52,26 +58,21 @@ export class AddFriendsTabPage implements OnInit {
     private afAuth: AngularFireAuth,
     private afs: AngularFirestore,
   ) { 
-    // this.friendsCollection = afs.collection<User>('users');
-    // this.friends = this.friendsCollection.valueChanges();
     this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
-    this.user = this.userDoc.valueChanges();
-    this.friends = this.userDoc.collection<User>("friends").valueChanges();
-    this.user.subscribe((data) => {
-      this.currentFriends = data.friends;
-      console.log(this.currentFriends);
-    });
-
-    this.friends.subscribe((data) => {
-      //this.currentFriends = data.friends;
-      console.log(data);
-    });
-
- 
+    this.friendsCollection = this.userDoc.collection<Friend>('friends');
+    this.friends = this.friendsCollection.snapshotChanges().pipe(
+      map(actions => actions.map(a => {
+        const data = a.payload.doc.data() as Friend;
+        const id = a .payload.doc.id;  
+        return { id, ...data};
+      }))
+    );
   }
 
   ngOnInit() {
-    //this.getFriends();
+    this.friends.subscribe((data) => {
+        this.currentFriends = data;
+      });
   }
 
   searchChanged(query) {
@@ -82,43 +83,31 @@ export class AddFriendsTabPage implements OnInit {
     }
   }
 
-  addFriend(userId){
-    console.log(userId);
-    let user = this.afs.collection("users", ref => ref.where('userId', '==', userId));
-    
-    //this.userDoc.
-    //this.friends = this.
-    // let docRef = firebase.firestore().collection("users").doc(this.afAuth.auth.currentUser.uid);
-      
-    // docRef.get()
-    //   .then((doc) => {
-    //     //console.log(doc.data());
-    //     let friendIds = doc.data().friendIds;
-    //     if(friendIds == undefined){
-    //       friendIds = [];
-    //     }
-    //     this.currentFriends.push(userId);
-    //     friendIds.push({ userId: userId });
-    //     docRef.update({ friendIds: friendIds });
-    //   }).catch((err) =>{
-    //     console.log(err);
-    //   })
-  }
-
-  getFriends(){
-    let docRef = firebase.firestore().collection("users").doc(this.afAuth.auth.currentUser.uid);
-    docRef.get()
-      .then((doc) => {
-        let friendIds = doc.data().friendIds;
-        //console.log(friendIds);
-        if(friendIds !== undefined){
-          friendIds.forEach((friend) => {
-            //console.log(friend.userId);
-            this.currentFriends.push(friend.userId);
-          });
+  alreadyFriends(userId){
+    var notFriends = true;
+    for(var i = 0; i < this.currentFriends.length; i++) {
+        if (this.currentFriends[i].userId == userId) {
+            notFriends = false;
+            break;
         }
-    })
+    }
+    return notFriends;
   }
 
+  addFriend(user: User) {
+    //console.log(user);
+    const id = user.userId.toString();
+    const friend: Friend = { 
+      id: id,
+      userId: user.userId,
+      email: user.email,
+      displayName: user.displayName,
+      created: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    this.friendsCollection.doc(id).set(friend);
+  }
   
+  removeFriend(userId) {
+    this.friendsCollection.doc(userId).delete();
+  }
 }

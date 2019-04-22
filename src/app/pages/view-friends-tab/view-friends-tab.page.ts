@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { map } from 'rxjs/operators';
 
 export interface User { 
   userId: string; 
@@ -13,6 +15,11 @@ export interface User {
   created: firebase.firestore.FieldValue;
 }
 
+
+export interface Friend { id: string, userId: string; }
+export interface FriendId extends Friend { id: string; }
+
+
 @Component({
   selector: 'app-view-friends-tab',
   templateUrl: './view-friends-tab.page.html',
@@ -21,62 +28,24 @@ export interface User {
 
 export class ViewFriendsTabPage implements OnInit {
 
+  private userDoc: AngularFirestoreDocument<User>;
+  private friendsCollection: AngularFirestoreCollection<Friend>;
+  friends: Observable<FriendId[]>;
+
   currentUsers: any[] = [];
   UserIds: any[] = [];
 
-  private friendsCollection: AngularFirestoreCollection<User>;
-  friends: Observable<User[]>;
+  //private friendsCollection: AngularFirestoreCollection<User>;
+  //friends: Observable<User[]>;
 
-  constructor(private readonly afs: AngularFirestore) { 
-    this.friendsCollection = afs.collection<User>('users');
+  constructor(
+    private afAuth: AngularFireAuth,
+    private readonly afs: AngularFirestore) { 
+    this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
+    this.friendsCollection = this.userDoc.collection<Friend>('friends');
     this.friends = this.friendsCollection.valueChanges();
   }
 
   ngOnInit() {
-    this.getUsers();
-  }
-
-  getUsers(){
-    let docRef = firebase.firestore().collection("users").doc(firebase.auth().currentUser.uid);
-    docRef.get()
-      .then((doc) => {
-        let UserIds = doc.data().UserIds;
-        if(UserIds !== undefined){
-          UserIds.forEach((User) => {
-            let UserDoc = firebase.firestore().collection("users").doc(User.userId);
-            UserDoc.get()
-              .then((doc) => {
-                this.currentUsers.push(doc.data());
-                doc.data().UserIds.forEach((doc) => {
-                  this.UserIds.push({ userId: User.userId });
-                })
-                console.log(doc.data());
-              });
-          });
-        }
-    })
-    
-  }
-
-  removeUser(User){
-    let docRef = firebase.firestore().collection("users").doc(firebase.auth().currentUser.uid);
-
-    docRef.get()
-      .then((doc) => {
-
-        const index = this.currentUsers.indexOf(User, 0);
-        if (index > -1) {
-          this.currentUsers.splice(index, 1);
-        }
-
-        const idIndex = this.UserIds.indexOf(User.userId, 0);
-        if (idIndex > -1) {
-          this.UserIds.splice(idIndex, 1);
-        }
-
-        docRef.update({ UserIds: this.UserIds });
-      }).catch((err) =>{
-        console.log(err);
-      })
   }
 }

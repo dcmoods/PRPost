@@ -17,7 +17,7 @@ const routes: Routes = [
         loadChildren: '../view-friends-tab/view-friends-tab.module#ViewFriendsTabPageModule'
       },
       {
-        path: 'add',
+        path: 'manage',
         loadChildren: '../add-friends-tab/add-friends-tab.module#AddFriendsTabPageModule'
       }
     ]
