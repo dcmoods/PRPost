@@ -16,7 +16,7 @@ export interface User {
   email: string;
   owner: string;
   created: firebase.firestore.FieldValue;
-  friends: any[];
+  followers: firebase.firestore.FieldValue;
 }
 
 export interface Friend { 
@@ -40,8 +40,7 @@ export interface FriendId extends Friend { id: string; }
 export class AddFriendsTabPage implements OnInit {
 
   private userDoc: AngularFirestoreDocument<User>;
-  private usersCollection: AngularFirestoreCollection<User>;
-  user: Observable<User[]>;
+  user: Observable<User>;
 
   private friendsCollection: AngularFirestoreCollection<Friend>;
   friends: Observable<FriendId[]>;
@@ -59,6 +58,7 @@ export class AddFriendsTabPage implements OnInit {
     private afs: AngularFirestore,
   ) { 
     this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
+    this.user = this.userDoc.valueChanges();
     this.friendsCollection = this.userDoc.collection<Friend>('friends');
     this.friends = this.friendsCollection.snapshotChanges().pipe(
       map(actions => actions.map(a => {
@@ -104,7 +104,12 @@ export class AddFriendsTabPage implements OnInit {
       displayName: user.displayName,
       created: firebase.firestore.FieldValue.serverTimestamp()
     };
+    
     this.friendsCollection.doc(id).set(friend);
+
+    this.afs.collection("users").doc(id).update({ 
+      followers: firebase.firestore.FieldValue.arrayUnion(this.afAuth.auth.currentUser.uid.toString()) 
+    });
   }
   
   removeFriend(userId) {

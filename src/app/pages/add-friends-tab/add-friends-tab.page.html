@@ -3,7 +3,7 @@
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>Add Friends</ion-title>
+      <ion-title>Manage Friends</ion-title>
     </ion-toolbar>
   </ion-header>
    
@@ -12,10 +12,8 @@
           <ion-row>
             <ion-col>
               <ais-search-box (change)="searchChanged($event)"></ais-search-box>
-      
             </ion-col>
           </ion-row>
-         
           <ais-hits >
               <ng-template let-hits="hits" let-results="results">
       

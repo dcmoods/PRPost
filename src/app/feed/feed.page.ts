@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { map } from 'rxjs/operators';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import * as moment from 'moment';
 import { PostsService } from '../services/posts.service';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { HttpClient } from '@angular/common/http';
 
 export interface Post {
   text: string;
@@ -17,6 +17,18 @@ export interface Post {
   owner: string;
   owner_name: string;
 }
+
+export interface User { 
+  userId: string; 
+  displayName: string;
+  email: string;
+  owner: string;
+  created: firebase.firestore.FieldValue;
+  followers: firebase.firestore.FieldValue;
+}
+
+export interface Friend { id: string, userId: string; }
+export interface FriendId extends Friend { id: string; }
 
 export interface PostId extends Post { id: string; }
 
@@ -28,6 +40,12 @@ export interface PostId extends Post { id: string; }
 
 export class FeedPage implements OnInit {
   
+  private userDoc: AngularFirestoreDocument<User>;
+  private friendsCollection: AngularFirestoreCollection<Friend>;
+  private followingPostsCollection: AngularFirestoreCollection<Post>;
+  user: Observable<User>;
+  friends: Observable<Friend[]>;
+  followingPosts: Observable<Post[]>
 
   text: string = "";
   posts: any[] = [];
@@ -35,9 +53,30 @@ export class FeedPage implements OnInit {
   cursor: any;
   infiniteEvent: any;
   image: string;
+  currentFollowers: firebase.firestore.FieldValue;
 
-  constructor(private afAuth: AngularFireAuth, private camera: Camera,
-    private loadingCtrl: LoadingController, private toastCtrl: ToastController) { }
+  constructor(
+    private afAuth: AngularFireAuth, 
+    private afs: AngularFirestore,
+    private camera: Camera,
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
+    private httpClient: HttpClient) { 
+      this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
+      this.user = this.userDoc.valueChanges();
+
+      this.user.subscribe((data) => {
+         this.currentFollowers = data.followers;
+      });
+
+      this.friendsCollection = this.userDoc.collection<Friend>('friends');
+      this.friends = this.friendsCollection.valueChanges();
+
+      this.followingPostsCollection = this.afs.collection<Post>('posts', ref => ref.where('followers', 'array-contains', this.afAuth.auth.currentUser.uid.toString()));
+      this.followingPosts = this.followingPostsCollection.valueChanges();
+
+      this.followingPosts.subscribe((data) => { console.log(data); });
+  }
 
   ngOnInit() {
     this.getPosts();
@@ -55,7 +94,7 @@ export class FeedPage implements OnInit {
     let query = firebase.firestore().collection("posts")
       .orderBy("created", "desc")
       .limit(this.pageSize);
-      
+
       // query.onSnapshot((snapshot) => {
       //   let changedDocs = snapshot.docChanges();
 
@@ -85,7 +124,7 @@ export class FeedPage implements OnInit {
 
         this.cursor = this.posts[this.posts.length - 1];
 
-        console.log(this.posts)
+        //console.log(this.posts)
       }).catch((err) =>{
         console.log(err)
       })
@@ -124,12 +163,13 @@ export class FeedPage implements OnInit {
     }
   }
 
-  post(){
+  post() {
     firebase.firestore().collection("posts").add({
       text: this.text,
       created: firebase.firestore.FieldValue.serverTimestamp(),
       owner: firebase.auth().currentUser.uid,
-      owner_name: firebase.auth().currentUser.displayName
+      owner_name: firebase.auth().currentUser.displayName,
+      followers: this.currentFollowers 
     }).then(async (doc) => {
 
       if(this.image) {
@@ -143,6 +183,7 @@ export class FeedPage implements OnInit {
         message: "Your post has been created.",
         duration: 3000
       });
+      
       await toast.present();
 
       this.getPosts();
@@ -225,5 +266,21 @@ export class FeedPage implements OnInit {
   ago(time) {
     let difference = moment(time).diff(moment());
     return moment.duration(difference).humanize();
+  }
+
+  like(post){
+    let body = {
+      postId: post.id,
+      userId: this.afAuth.auth.currentUser.uid,
+      action: post.likes && post.likes[this.afAuth.auth.currentUser.uid] == true ? "unlike" : "like"
+    };
+
+    this.httpClient.post("https://us-central1-prpost-5d828.cloudfunctions.net/updateLikesCount", JSON.stringify(body), {
+      responseType: "text"
+    }).subscribe((data) => {
+      console.log(data);
+    }, (error) => {
+      console.log(error);
+    });
   }
 }

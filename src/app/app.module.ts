@@ -15,6 +15,7 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
 import { environment } from '../environments/environment';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { NgAisModule } from 'angular-instantsearch';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [AppComponent],
@@ -27,6 +28,7 @@ import { NgAisModule } from 'angular-instantsearch';
     AngularFirestoreModule, 
     AngularFireAuthModule,
     NgAisModule, 
+    HttpClientModule,
   ],
   providers: [
     StatusBar,

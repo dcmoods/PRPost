@@ -23,40 +23,43 @@
     </ion-card>
   </ion-row>
 
-  <ion-card *ngFor="let post of posts">
-      <ion-item-divider color="danger">
-        {{ post.data().owner_name }} says
-      </ion-item-divider>
+  <ion-card *ngFor="let post of followingPosts | async">
+      <ion-card-header >
+        <ion-card-subtitle>{{ post.owner_name }} says:</ion-card-subtitle>
+      </ion-card-header>
   
-      <ion-item text-wrap>
-        <ion-label text-wrap>
-          {{ post.data().text }}
-        </ion-label>
-      </ion-item>
+      <ion-card-content text-wrap>
+          {{ post.text }}
+        <ion-row>
+          <ion-col>
+            <img [src]="post.image" *ngIf="post.image" /> 
+          </ion-col>
+        </ion-row>
+    </ion-card-content>
+    <ion-item>
       
-      <img [src]="post.data().image" *ngIf="post.data().image" /> 
-
-    <ion-row class="bottom-bar">
-      <ion-col>
-        <ion-button expand="full" icon-left clear size="small" color="danger" class="border-right">
-          <ion-icon name="thumbs-up"></ion-icon>
-          <small>12 likes</small>
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="full" icon-left clear size="small" color="danger" class="border-right">
-          <ion-icon name="text"></ion-icon>
-          <small>12 comments</small>
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="full" icon-left clear size="small" color="danger">
-          <small>{{ ago(post.created) }} ago</small>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-card>
-  <ion-infinite-scroll (ionInfinite)="loadMorePosts($event)">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-  </ion-infinite-scroll>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="full" icon-left clear size="small" color="light" class="border-right" (click)="like(post)">
+            <ion-icon name="thumbs-up"></ion-icon>
+            <small>12 likes</small>
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="full" icon-left clear size="small" color="light" class="border-right">
+            <ion-icon name="text"></ion-icon>
+            <small>12 comments</small>
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="full" icon-left clear size="small" color="light">
+            <small>{{ ago(post.created.toDate()) }} ago</small>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+      </ion-card>
+      <ion-infinite-scroll (ionInfinite)="loadMorePosts($event)">
+  <ion-infinite-scroll-content></ion-infinite-scroll-content>
+</ion-infinite-scroll>
 </ion-content>
