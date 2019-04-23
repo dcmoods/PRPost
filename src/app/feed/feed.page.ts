@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
-import { ToastController, LoadingController } from '@ionic/angular';
+import { ToastController, LoadingController, ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/auth';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import * as moment from 'moment';
-import { PostsService } from '../services/posts.service';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { CommentsPage } from '../pages/comments/comments.page';
+import { Chance } from 'chance';
 
 export interface Post {
   text: string;
@@ -24,13 +26,15 @@ export interface User {
   email: string;
   owner: string;
   created: firebase.firestore.FieldValue;
-  followers: firebase.firestore.FieldValue;
+ // followers: firebase.firestore.FieldValue;
 }
+
 
 export interface Friend { id: string, userId: string; }
 export interface FriendId extends Friend { id: string; }
 
 export interface PostId extends Post { id: string; }
+
 
 @Component({
   selector: 'app-feed',
@@ -43,9 +47,10 @@ export class FeedPage implements OnInit {
   private userDoc: AngularFirestoreDocument<User>;
   private friendsCollection: AngularFirestoreCollection<Friend>;
   private followingPostsCollection: AngularFirestoreCollection<Post>;
+ 
   user: Observable<User>;
   friends: Observable<Friend[]>;
-  followingPosts: Observable<Post[]>
+  followingPosts: Observable<PostId[]>
 
   text: string = "";
   posts: any[] = [];
@@ -61,19 +66,31 @@ export class FeedPage implements OnInit {
     private camera: Camera,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
+    private actionSheetCtrl: ActionSheetController,
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController,
     private httpClient: HttpClient) { 
+
       this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
       this.user = this.userDoc.valueChanges();
 
-      this.user.subscribe((data) => {
-         this.currentFollowers = data.followers;
-      });
+      // this.user.subscribe((data) => {
+      //    this.currentFollowers = data.followers;
+      // });
 
       this.friendsCollection = this.userDoc.collection<Friend>('friends');
       this.friends = this.friendsCollection.valueChanges();
 
-      this.followingPostsCollection = this.afs.collection<Post>('posts', ref => ref.where('followers', 'array-contains', this.afAuth.auth.currentUser.uid.toString()));
-      this.followingPosts = this.followingPostsCollection.valueChanges();
+      this.followingPostsCollection = this.afs.collection<Post>('posts', 
+        ref => ref.where('followers', 'array-contains', this.afAuth.auth.currentUser.uid.toString()).orderBy("created", "asc"));
+      //this.followingPosts = this.followingPostsCollection.valueChanges();
+      this.followingPosts = this.followingPostsCollection.snapshotChanges().pipe(
+        map(actions => actions.map(a => {
+          const data = a.payload.doc.data() as Post;
+          const id = a.payload.doc.id;
+          return { id, ...data };
+        }))
+      );
 
       this.followingPosts.subscribe((data) => { console.log(data); });
   }
@@ -169,7 +186,7 @@ export class FeedPage implements OnInit {
       created: firebase.firestore.FieldValue.serverTimestamp(),
       owner: firebase.auth().currentUser.uid,
       owner_name: firebase.auth().currentUser.displayName,
-      followers: this.currentFollowers 
+      //followers: this.currentFollowers 
     }).then(async (doc) => {
 
       if(this.image) {
@@ -269,6 +286,7 @@ export class FeedPage implements OnInit {
   }
 
   like(post){
+    console.log(post);
     let body = {
       postId: post.id,
       userId: this.afAuth.auth.currentUser.uid,
@@ -282,5 +300,74 @@ export class FeedPage implements OnInit {
     }, (error) => {
       console.log(error);
     });
+  }
+
+  async comment(post){
+    this.actionSheetCtrl.create({
+      buttons: [{
+          text: "View Comments",
+          handler: async () => {
+            let modal = await this.modalCtrl.create({
+              component: CommentsPage,
+              componentProps: {
+                "post": post
+              }
+            });
+
+            modal.present();
+          }
+        }, {
+          text: "New Comment",
+          handler: () => {
+            this.alertCtrl.create({
+              header: "New Comment",
+              message: "Type your comment",
+              inputs: [{
+                name: "comment",
+                type: "text"
+              }],
+              buttons: [{
+                text: "Cancel"
+              }, {
+                text: "Post",
+                handler: (data) => {
+                  if (data.comment){
+                    this.afs.collection("comments").add({
+                      text: data.comment,
+                      post: post.id,
+                      owner: this.afAuth.auth.currentUser.uid,
+                      owner_name: this.afAuth.auth.currentUser.displayName,
+                      created: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then((doc) => {
+                      this.toastCtrl.create({
+                        message: "Comment was posted successfully!",
+                        duration: 3000
+                      }).then((toast) => {
+                        toast.present();
+                      })
+                    }).catch((err) => {
+                      this.toastCtrl.create({
+                        message: err.message,
+                        duration: 3000
+                      }).then((toast) => {
+                        toast.present();
+                      })
+                    })
+                  }
+                }
+              }]
+            }).then((alert) => {
+              alert.present();
+            })
+          }
+        }]
+    }).then((action) => {
+      action.present();
+    })
+  }
+
+  randomText(){
+    const chance = new Chance();
+    this.text = chance.sentence();
   }
 }

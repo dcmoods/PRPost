@@ -16,10 +16,16 @@ import { environment } from '../environments/environment';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { NgAisModule } from 'angular-instantsearch';
 import { HttpClientModule } from '@angular/common/http';
+import { CommentsPage } from './pages/comments/comments.page';
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
+  declarations: [
+    AppComponent,
+    CommentsPage
+  ],
+  entryComponents: [
+    CommentsPage
+  ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(),

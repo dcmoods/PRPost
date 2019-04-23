@@ -7,6 +7,7 @@ import { Location } from '@angular/common';
 import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import { Chance } from 'chance';
+import { routerNgProbeToken } from '@angular/router/src/router_module';
 
 @Component({
   selector: 'app-signup',
@@ -49,7 +50,7 @@ export class SignupPage implements OnInit {
                {
                  text: "OK",
                  handler: () => {
-                   //navigate to the feeds page
+                   this.router.navigate(['/menu/posts'])
                  }
                }
              ]
@@ -62,6 +63,7 @@ export class SignupPage implements OnInit {
             displayName: newUser.displayName,
             created: firebase.firestore.FieldValue.serverTimestamp(),
             owner: newUser.uid,
+            followers: firebase.firestore.FieldValue.arrayUnion(newUser.uid)
           }
 
           this.afs.collection('users').doc(user.owner).set(user);
@@ -114,20 +116,10 @@ export class SignupPage implements OnInit {
              displayName: newUser.displayName,
              created: firebase.firestore.FieldValue.serverTimestamp(),
              owner: newUser.uid,
+             followers: firebase.firestore.FieldValue.arrayUnion(newUser.uid)
            }
 
            this.afs.collection('users').doc(user.owner).set(user);
-          // firebase.firestore().collection("users").add({
-          //   userId: newUser.uid,
-          //   email: newUser.email,
-          //   displayName: newUser.displayName,
-          //   created: firebase.firestore.FieldValue.serverTimestamp(),
-          //   owner: newUser.uid,
-          // }).then(async (doc) => {
-          //   console.log(doc)
-          // }).catch((err) => {
-          //   console.log(err)
-          // })
 
          }).catch((err) => {
            console.log(err);
