@@ -99,94 +99,79 @@ export class FeedPage implements OnInit {
     this.getPosts();
   }
 
-  async getPosts(){
-    this.posts = [];
+  // async getPosts(){
+  //   this.posts = [];
 
-    let loading = await this.loadingCtrl.create({
-      message: "Loading Feed...",
-      spinner: 'crescent'
-    });
-    await loading.present();
+  //   let loading = await this.loadingCtrl.create({
+  //     message: "Loading Feed...",
+  //     spinner: 'crescent'
+  //   });
+  //   await loading.present();
 
-    let query = firebase.firestore().collection("posts")
-      .orderBy("created", "desc")
-      .limit(this.pageSize);
+  //   let query = firebase.firestore().collection("posts")
+  //     .orderBy("created", "desc")
+  //     .limit(this.pageSize);
 
-      // query.onSnapshot((snapshot) => {
-      //   let changedDocs = snapshot.docChanges();
+  //     query.get()
+  //     .then((docs) => {
 
-      //   changedDocs.forEach((change) => {
-      //     if(change.type == "added"){
+  //       docs.forEach((doc) => {
+  //         this.posts.push(doc);
+  //       })
 
-      //     }
+  //       loading.dismiss();
 
-      //     if(change.type == "modified"){
-            
-      //     }
+  //       this.cursor = this.posts[this.posts.length - 1];
 
-      //     if(change.type == "removed"){
-            
-      //     }
-      //   })
-      // });
+  //       //console.log(this.posts)
+  //     }).catch((err) =>{
+  //       console.log(err)
+  //     })
+  // }
 
-      query.get()
-      .then((docs) => {
+  // loadMorePosts(event){
+  //   firebase.firestore().collection("posts")
+  //     .orderBy("created", "desc")
+  //     .startAfter(this.cursor)
+  //     .limit(this.pageSize).get()
+  //     .then((docs) => {
 
-        docs.forEach((doc) => {
-          this.posts.push(doc);
-        })
-
-        loading.dismiss();
-
-        this.cursor = this.posts[this.posts.length - 1];
-
-        //console.log(this.posts)
-      }).catch((err) =>{
-        console.log(err)
-      })
-  }
-
-  loadMorePosts(event){
-    firebase.firestore().collection("posts")
-      .orderBy("created", "desc")
-      .startAfter(this.cursor)
-      .limit(this.pageSize).get()
-      .then((docs) => {
-
-        docs.forEach((doc) => {
-          this.posts.push(doc);
-        })
+  //       docs.forEach((doc) => {
+  //         this.posts.push(doc);
+  //       })
         
-        console.log(docs)
+  //       console.log(docs)
 
-        if(docs.size < this.pageSize){
-          event.target.disabled = true;
-          this.infiniteEvent = event;
-        } else {
-          event.target.complete();
-          this.cursor = this.posts[this.posts.length - 1];
-        }
-      }).catch((err) =>{
-        console.log(err)
-      })
-  }
+  //       if(docs.size < this.pageSize){
+  //         event.target.disabled = true;
+  //         this.infiniteEvent = event;
+  //       } else {
+  //         event.target.complete();
+  //         this.cursor = this.posts[this.posts.length - 1];
+  //       }
+  //     }).catch((err) =>{
+  //       console.log(err)
+  //     })
+  // }
 
-  refresh(event){
-    this.getPosts();
-    event.complete();
-    if(this.infiniteEvent){
-      this.infiniteEvent.enable(true);
-    }
-  }
+  // refresh(event){
+  //   this.getPosts();
+  //   event.complete();
+  //   if(this.infiniteEvent){
+  //     this.infiniteEvent.enable(true);
+  //   }
+  // }
 
   post() {
+    if(this.text.length <= 0 ) {
+      return;
+    }
+    
     firebase.firestore().collection("posts").add({
       text: this.text,
       created: firebase.firestore.FieldValue.serverTimestamp(),
       owner: firebase.auth().currentUser.uid,
       owner_name: firebase.auth().currentUser.displayName,
-      //followers: this.currentFollowers 
     }).then(async (doc) => {
 
       if(this.image) {
@@ -203,11 +188,9 @@ export class FeedPage implements OnInit {
       
       await toast.present();
 
-      this.getPosts();
     }).catch((err) => {
       console.log(err)
     })
-
   }
 
   addPhoto(){

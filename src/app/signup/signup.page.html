@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="dark">
-    <ion-title>signup</ion-title>
+    <ion-title>Sign Up</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -30,21 +30,15 @@
       <ion-input type="password" placeholder="your password" [(ngModel)]="password"></ion-input>
     </ion-row>
 
-    <ion-row>
-      <ion-button ion-button block round outline color="primary"
-        style="margin-top: 20px;" (click)="signUp()">Sign Up</ion-button>
-    </ion-row>
+    <ion-button expand="full" color="primary" style="margin-top: 20px;" (click)="signUp()">Sign Up</ion-button>
 
-    <ion-row>
-      <ion-button ion-button block clear color="secondary" (click)="goback()">
-        Already have an account? Login Up
-      </ion-button>
-    </ion-row>
+    <ion-button expand="full" size="small" color="secondary" fill="clear" text-start (click)="goback()">
+      Already have an account?
+    </ion-button>
+  
+
+        <ion-button color="danger" expand="full" (click)="addUser()">Add Fake User</ion-button>
+   
   </ion-grid>
   
-<ion-row>
-  <ion-col>
-    <ion-button color="danger" (click)="addUser()">Add Fake User</ion-button>
-  </ion-col>
-</ion-row>
 </ion-content>
