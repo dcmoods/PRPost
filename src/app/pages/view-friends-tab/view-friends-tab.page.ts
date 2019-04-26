@@ -35,9 +35,6 @@ export class ViewFriendsTabPage implements OnInit {
   currentUsers: any[] = [];
   UserIds: any[] = [];
 
-  //private friendsCollection: AngularFirestoreCollection<User>;
-  //friends: Observable<User[]>;
-
   constructor(
     private afAuth: AngularFireAuth,
     private readonly afs: AngularFirestore) { 

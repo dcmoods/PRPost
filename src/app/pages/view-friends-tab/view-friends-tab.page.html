@@ -14,21 +14,19 @@
             {{ friend.displayName }}
         </ion-card-header>
         <ion-card-content>
-          <ion-grid>
-            <ion-row class="ion-justify-content-between">
-              <ion-col class="ion-align-self-center" size="3">
-                <div>
-                    {{ friend.email }}
-                </div>
-              </ion-col>
-              <ion-col class="ion-align-self-center" size="3" class="ion-text-end">
-                <!-- <ion-button color="danger" fill="clear" (click)="removeFriend(friend)">
-                    <ion-icon name="trash"></ion-icon>
-                </ion-button> -->
-              </ion-col>
-            </ion-row>
-         
-          </ion-grid>
+          <ion-item lines="none">
+            {{ friend.email }}
+          </ion-item>
+          <!-- <ion-item lines="none">
+            {{ friend.firstName }}
+          </ion-item>
+          <ion-item lines="none">
+            {{ friend.lastName }}
+          </ion-item>
+          <ion-item lines="none">
+            {{ friend.phoneNumber }}
+          </ion-item> -->
+          
         </ion-card-content>
       </ion-card>
 

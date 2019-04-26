@@ -20,6 +20,10 @@ export class MenuPage implements OnInit {
     {
       title: 'Friends',
       url: '/menu/friends'
+    },
+    {
+      title: 'Profile',
+      url: '/menu/user-profile'
     }
   ];
 

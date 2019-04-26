@@ -96,7 +96,6 @@ export class FeedPage implements OnInit {
   }
 
   ngOnInit() {
-    this.getPosts();
   }
 
   // async getPosts(){

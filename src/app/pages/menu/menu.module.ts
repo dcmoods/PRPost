@@ -19,7 +19,8 @@ const routes: Routes = [
       {
         path: 'friends',
         loadChildren: '../friends-main/friends-main.module#FriendsMainPageModule'
-      }
+      },
+      { path: 'user-profile', loadChildren: '../user-profile/user-profile.module#UserProfilePageModule' },
     ]
   }
 ];
