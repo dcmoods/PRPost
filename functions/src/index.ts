@@ -140,13 +140,14 @@ export const updateFollowersOnPosts = functions.https.onRequest((request, respon
     const userId: string = body.userId;
     const action = body.action; // 'follow' or 'unfollow'
 
-    admin.firestore().collection('posts')
+    let query = admin.firestore().collection('posts')
       .where('owner', '==', postOwner)
-      .get()
-      .then((docs) => {
+      .get();
+
+      query.then((docs) => {
         
 
-        docs.foreach((doc) => {
+        docs.forEach((doc) => {
           let updateData:any = {};
           
           if(action == "follow"){
@@ -154,7 +155,7 @@ export const updateFollowersOnPosts = functions.https.onRequest((request, respon
           } else {
             updateData[`following.${userId}`] = false;
           } 
-          admin.firestore().collection('posts').doc(doc).update(updateData)
+          admin.firestore().collection('posts').doc(doc.data().id).update(updateData)
           .then(() => {
             response.status(200).send('Done');
           })
