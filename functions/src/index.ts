@@ -39,12 +39,6 @@ exports.unindexUser = functions.firestore
         return index.deleteObject(objectId);
     });
 
-// export interface UpdateData {
-//   likesCount: number;
-//   likes: {
-//     [key:string]: boolean
-//   }
-// }
 
 export const updateLikesCount = functions.https.onRequest((request, response) => {
   corsHandler(request, response, () => {
@@ -73,7 +67,7 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
         } else {
             updateData["likesCount"] = --likesCount;
             updateData[`likes.${userId}`] = false;
-}
+        } 
         admin.firestore().collection('posts').doc(postId).update(updateData)
           .then(() => {
             response.status(200).send('Done');
@@ -131,6 +125,46 @@ export const updatePostFollowers = functions.firestore.document("posts/{postId}"
   } else {
     return false;
   }
+})
 
+export const updateFollowersOnPosts = functions.https.onRequest((request, response) => {
+  corsHandler(request, response, () => {
+    console.log(request.body);
+    let body: any;
+    if (typeof (request.body) === 'string') {
+      body = JSON.parse(request.body);
+    } else {
+      body = request.body;
+    }
+    const postOwner = body.postOwner;
+    const userId: string = body.userId;
+    const action = body.action; // 'follow' or 'unfollow'
 
+    admin.firestore().collection('posts')
+      .where('owner', '==', postOwner)
+      .get()
+      .then((docs) => {
+        
+
+        docs.foreach((doc) => {
+          let updateData:any = {};
+          
+          if(action == "follow"){
+            updateData[`following.${userId}`] = true;
+          } else {
+            updateData[`following.${userId}`] = false;
+          } 
+          admin.firestore().collection('posts').doc(doc).update(updateData)
+          .then(() => {
+            response.status(200).send('Done');
+          })
+          .catch(error => {
+            response.status(error.code).send(error.message);
+          })
+        })
+      })
+      .catch(error => {
+        response.status(error.code).send(error.message);
+      });
+    });
 })
