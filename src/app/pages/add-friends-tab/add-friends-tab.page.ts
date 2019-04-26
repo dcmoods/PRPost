@@ -5,9 +5,8 @@ import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { UseExistingWebDriver } from 'protractor/built/driverProviders';
-import { userInfo } from 'os';
 import { map, switchMap } from 'rxjs/operators';
 
 export interface User { 
@@ -56,6 +55,7 @@ export class AddFriendsTabPage implements OnInit {
   constructor(
     private afAuth: AngularFireAuth,
     private afs: AngularFirestore,
+    private httpClient: HttpClient
   ) { 
     this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
     this.user = this.userDoc.valueChanges();
@@ -94,7 +94,7 @@ export class AddFriendsTabPage implements OnInit {
     return notFriends;
   }
 
-  addFriend(user: User) {
+  addFriend(user: User, action: string) {
     //console.log(user);
     const id = user.userId.toString();
     const friend: Friend = { 
@@ -110,9 +110,37 @@ export class AddFriendsTabPage implements OnInit {
     this.afs.collection("users").doc(id).update({ 
       followers: firebase.firestore.FieldValue.arrayUnion(this.afAuth.auth.currentUser.uid.toString()) 
     });
+
+    console.log(user);
+    let body = {
+      postOwner: id,
+      userId: this.afAuth.auth.currentUser.uid,
+      action: "follow"
+    };
+
+    this.httpClient.post("https://us-central1-prpost-5d828.cloudfunctions.net/updateFollowersOnPosts", JSON.stringify(body), {
+      responseType: "text"
+    }).subscribe((data) => {
+      console.log(data);
+    }, (error) => {
+      console.log(error);
+    });
   }
   
   removeFriend(userId) {
     this.friendsCollection.doc(userId).delete();
+    let body = {
+      postOwner: userId,
+      userId: this.afAuth.auth.currentUser.uid,
+      action: "unfollow"
+    };
+
+    this.httpClient.post("https://us-central1-prpost-5d828.cloudfunctions.net/updateFollowersOnPosts", JSON.stringify(body), {
+      responseType: "text"
+    }).subscribe((data) => {
+      console.log(data);
+    }, (error) => {
+      console.log(error);
+    });
   }
 }

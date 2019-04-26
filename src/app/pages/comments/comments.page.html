@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      <small>{{ post.commentsCount }} people have commented.</small>
+      <small>{{ post.commentsCount || 0 }} people have commented.</small>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="close()" >

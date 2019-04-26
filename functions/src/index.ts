@@ -2,7 +2,6 @@ import * as functions from 'firebase-functions';
 import * as algoliasearch from 'algoliasearch';
 import * as admin from 'firebase-admin';
 import * as cors from 'cors';
-import { ConsoleReporter } from 'jasmine';
 
 admin.initializeApp(functions.config().firebase);
 
@@ -53,7 +52,7 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
     const postId = body.postId;
     const userId: string = body.userId;
     const action = body.action; // 'like' or 'unlike'
-   
+
     admin.firestore().collection('posts').doc(postId).get()
       .then((data: any) => {
         let likesCount: number = data.data().likesCount || 0;
@@ -68,7 +67,7 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
         } else {
             updateData["likesCount"] = --likesCount;
             updateData[`likes.${userId}`] = false;
-        } 
+        }
         admin.firestore().collection('posts').doc(postId).update(updateData)
           .then(() => {
             response.status(200).send('Done');
@@ -130,46 +129,46 @@ export const updatePostFollowers = functions.firestore.document("posts/{postId}"
 
 export const updateFollowersOnPosts = functions.https.onRequest((request, response) => {
   corsHandler(request, response, () => {
-    console.log(request.body);
+
     let body: any;
     if (typeof (request.body) === 'string') {
       body = JSON.parse(request.body);
     } else {
       body = request.body;
     }
+
     const postOwner = body.postOwner;
     const userId: string = body.userId;
     const action = body.action; // 'follow' or 'unfollow'
 
     let query = admin.firestore().collection('posts')
-      .where('owner', '==', postOwner)
-      .get();
-      console.log(query);
-      query.then((docs) => {
-        //console.log(docs);
+      .where('owner', '==', postOwner);
+
+      query.get().then((docs) => {
         docs.forEach((doc) => {
           let updateData:any = {};
           console.log(doc);
-          
+
           if(action == "follow"){
-            updateData[`following.${userId}`] = true;
+            updateData['followers'] = admin.firestore.FieldValue.arrayUnion(userId);
           } else {
-            updateData[`following.${userId}`] = false;
-          } 
-          // admin.firestore().collection('posts').doc(doc.id).update(updateData)
-          // .then(() => {
-          //   //response.status(200).send('Done');
-          // })
-          // .catch(error => {
-          //   response.status(error.code).send(error.message);
-          // })
-        })
+            updateData['followers'] = admin.firestore.FieldValue.arrayRemove(userId);
+          }
+          admin.firestore().collection('posts').doc(doc.id).update(updateData)
+          .then(() => {
+            console.log("Done");
+          })
+          .catch(error => {
+            response.status(error.code).send(error.message);
+          })
+        });
+
+        response.status(200).send('Done');
       })
       .catch(error => {
         response.status(error.code).send(error.message);
       });
 
-      response.status(200).send('Done');
     });
 
 })
