@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as algoliasearch from 'algoliasearch';
 import * as admin from 'firebase-admin';
 import * as cors from 'cors';
+import { ConsoleReporter } from 'jasmine';
 
 admin.initializeApp(functions.config().firebase);
 
@@ -143,29 +144,32 @@ export const updateFollowersOnPosts = functions.https.onRequest((request, respon
     let query = admin.firestore().collection('posts')
       .where('owner', '==', postOwner)
       .get();
-
+      console.log(query);
       query.then((docs) => {
-        
-
+        //console.log(docs);
         docs.forEach((doc) => {
           let updateData:any = {};
+          console.log(doc);
           
           if(action == "follow"){
             updateData[`following.${userId}`] = true;
           } else {
             updateData[`following.${userId}`] = false;
           } 
-          admin.firestore().collection('posts').doc(doc.data().id).update(updateData)
-          .then(() => {
-            response.status(200).send('Done');
-          })
-          .catch(error => {
-            response.status(error.code).send(error.message);
-          })
+          // admin.firestore().collection('posts').doc(doc.id).update(updateData)
+          // .then(() => {
+          //   //response.status(200).send('Done');
+          // })
+          // .catch(error => {
+          //   response.status(error.code).send(error.message);
+          // })
         })
       })
       .catch(error => {
         response.status(error.code).send(error.message);
       });
+
+      response.status(200).send('Done');
     });
+
 })
