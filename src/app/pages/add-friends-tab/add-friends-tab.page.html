@@ -13,8 +13,9 @@
             <ion-col>
               <ais-search-box (change)="searchChanged($event)"></ais-search-box>
             </ion-col>
+          
           </ion-row>
-          <ais-hits >
+          <ais-hits>
               <ng-template let-hits="hits" let-results="results">
       
                 <p class="info" *ngIf="hits.length === 0">

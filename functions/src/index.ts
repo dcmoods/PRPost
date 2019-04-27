@@ -31,6 +31,18 @@ exports.indexUser = functions.firestore
         });
     });
 
+  exports.updateIndexedUser = functions.firestore
+    .document('users/{userId}')
+    .onUpdate((snap, context) => {
+        const data = snap.after.data();
+        const objectId = snap.before.id;
+        
+        return index.saveObject({
+            objectID: objectId,
+            ...data
+        });
+    });
+
 exports.unindexUser = functions.firestore
     .document('users/{userId}')
     .onDelete((snap, context) => {
