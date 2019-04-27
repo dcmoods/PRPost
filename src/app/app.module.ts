@@ -14,6 +14,7 @@ import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { environment } from '../environments/environment';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { Firebase } from '@ionic-native/firebase/ngx';
 import { NgAisModule } from 'angular-instantsearch';
 import { HttpClientModule } from '@angular/common/http';
 import { CommentsPage } from './pages/comments/comments.page';
@@ -40,6 +41,7 @@ import { CommentsPage } from './pages/comments/comments.page';
     StatusBar,
     SplashScreen,
     Camera,
+    Firebase,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   ],
   bootstrap: [AppComponent]

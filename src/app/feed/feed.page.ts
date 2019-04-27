@@ -12,6 +12,7 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { CommentsPage } from '../pages/comments/comments.page';
 import { Chance } from 'chance';
+import { Firebase } from '@ionic-native/firebase/ngx';
 
 export interface Post {
   text: string;
@@ -26,7 +27,8 @@ export interface User {
   email: string;
   owner: string;
   created: firebase.firestore.FieldValue;
- // followers: firebase.firestore.FieldValue;
+  token: string;
+  tokenUpdated: firebase.firestore.FieldValue;
 }
 
 
@@ -69,17 +71,19 @@ export class FeedPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private alertCtrl: AlertController,
     private modalCtrl: ModalController,
-    private httpClient: HttpClient) { 
+    private httpClient: HttpClient,
+    private firebaseCordova: Firebase) { 
+      this.firebaseCordova.getToken().then((token) => {
+        this.updateToken(token);
+      }).catch((err) => {
+        console.log(err.message);
+      });
 
       this.userDoc = this.afs.doc<User>("users/" + this.afAuth.auth.currentUser.uid.toString());
       this.user = this.userDoc.valueChanges();
 
-      // this.user.subscribe((data) => {
-      //    this.currentFollowers = data.followers;
-      // });
-
-      this.friendsCollection = this.userDoc.collection<Friend>('friends');
-      this.friends = this.friendsCollection.valueChanges();
+      // this.friendsCollection = this.userDoc.collection<Friend>('friends');
+      // this.friends = this.friendsCollection.valueChanges();
 
       this.followingPostsCollection = this.afs.collection<Post>('posts', 
         ref => ref.where('followers', 'array-contains', this.afAuth.auth.currentUser.uid.toString()).orderBy("created", "asc"));
@@ -96,6 +100,17 @@ export class FeedPage implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  updateToken(token: string) {
+    this.userDoc.update({
+      token: token,
+      tokenUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        console.log("saved token");
+      }).catch((err) => {
+        console.log(err.message);
+      })
   }
 
   // async getPosts(){

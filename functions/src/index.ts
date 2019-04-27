@@ -40,6 +40,46 @@ exports.unindexUser = functions.firestore
     });
 
 
+const sendNotification = (ownerId: string, type: string) => {
+
+  return new Promise((resolve, reject) => {
+    admin.firestore().collection("users").doc(ownerId).get().then((doc) => {
+      const docData: any = doc.data();
+      if(doc.exists && docData.token) {
+        if(type == 'newComment') {
+          admin.messaging().sendToDevice(docData.token, {
+            data: {
+              title: "A new comment was made on your post.",
+              sound: "default",
+              body: "Tap to view"
+            }
+          }).then((sent) => {
+            resolve(sent);
+          }).catch((err) => {
+            reject(err);
+          });
+        } else if (type == "newLike") {
+          admin.messaging().sendToDevice(docData.token, {
+            data: {
+              title: "Someone liked your post.",
+              sound: "default",
+              body: "Tap to view"
+            }
+          }).then((sent) => {
+            resolve(sent);
+          }).catch((err) => {
+            reject(err);
+          });
+        }
+      }
+    }).catch((err) => {
+      reject(err);
+    })
+
+  });
+
+}
+
 export const updateLikesCount = functions.https.onRequest((request, response) => {
   corsHandler(request, response, () => {
     console.log(request.body);
@@ -69,7 +109,12 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
             updateData[`likes.${userId}`] = false;
         }
         admin.firestore().collection('posts').doc(postId).update(updateData)
-          .then(() => {
+          .then(async () => {
+
+            if(action == 'like') {
+              await sendNotification(data.data().owner, "newLike");
+            }
+
             response.status(200).send('Done');
           })
           .catch(error => {
@@ -98,7 +143,7 @@ export const updateCommentsCount = functions.firestore.document("comments/{comme
       "commentsCount": commentsCount
     });
 
-    return true;
+    return await sendNotification(docData.owner, "newComment");
   } else {
     return false;
   }
