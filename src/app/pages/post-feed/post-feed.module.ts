@@ -2,18 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
-import { NgAisModule } from 'angular-instantsearch';
-
+import { HttpClientModule } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
 
-import { FriendsPage } from './friends.page';
-
-
+import { PostFeedPage } from './post-feed.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: FriendsPage
+    component: PostFeedPage
   }
 ];
 
@@ -22,9 +19,9 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    RouterModule.forChild(routes),
-    NgAisModule,
+    HttpClientModule,
+    RouterModule.forChild(routes)
   ],
-  declarations: [FriendsPage]
+  declarations: [PostFeedPage]
 })
-export class FriendsPageModule {}
+export class PostFeedPageModule {}

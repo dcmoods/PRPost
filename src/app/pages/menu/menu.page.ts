@@ -15,7 +15,7 @@ export class MenuPage implements OnInit {
   pages = [
     {
       title: 'Posts',
-      url: '/menu/posts'
+      url: '/menu/post-feed'
     },
     {
       title: 'Friends',

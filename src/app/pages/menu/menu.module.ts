@@ -21,6 +21,7 @@ const routes: Routes = [
         loadChildren: '../friends-main/friends-main.module#FriendsMainPageModule'
       },
       { path: 'user-profile', loadChildren: '../user-profile/user-profile.module#UserProfilePageModule' },
+      { path: 'post-feed', loadChildren: '../post-feed/post-feed.module#PostFeedPageModule' },
     ]
   }
 ];

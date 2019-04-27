@@ -15,6 +15,8 @@ const routes: Routes = [
   
 
   
+
+  
   //{ path: 'friends-main', loadChildren: './pages/friends-main/friends-main.module#FriendsMainPageModule' },
   //{ path: 'add-friends-tab', loadChildren: './pages/add-friends-tab/add-friends-tab.module#AddFriendsTabPageModule' },
   //{ path: 'view-friends-tab', loadChildren: './pages/view-friends-tab/view-friends-tab.module#ViewFriendsTabPageModule' },
