@@ -30,7 +30,7 @@ export class LoginPage implements OnInit {
             duration: 3000
           }).then((toast) => toast.present());        
 
-          this.router.navigate(['/menu/posts'])
+          this.router.navigate(['/menu/post-feed'])
         })
         .catch((err) => {
           console.log(err);

@@ -50,7 +50,7 @@ export class SignupPage implements OnInit {
                {
                  text: "OK",
                  handler: () => {
-                   this.router.navigate(['/menu/posts'])
+                   this.router.navigate(['/menu/post-feed'])
                  }
                }
              ]
