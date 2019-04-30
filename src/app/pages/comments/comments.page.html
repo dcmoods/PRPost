@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>
-      <small>{{ post.commentsCount || 0 }} people have commented.</small>
+    <ion-title >
+      <small *ngIf="postComments | async;let comments">{{ comments.length }} people have commented.</small>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button fill="clear" (click)="close()" >

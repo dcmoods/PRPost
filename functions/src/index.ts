@@ -52,10 +52,17 @@ exports.unindexUser = functions.firestore
     });
 
 
-const sendNotification = (ownerId: string, type: string) => {
-
+function sendNotification(ownerId: string, type: string) {
+  console.log(ownerId, type);
+  // return new Promise((resolve, reject) =>{
+  //   resolve("It worked!");
+  //   reject("error");
+  // })
   return new Promise((resolve, reject) => {
-    admin.firestore().collection("users").doc(ownerId).get().then((doc) => {
+    let query = admin.firestore().collection("users").doc(ownerId);
+    
+    
+    query.get().then((doc) => {
       const docData: any = doc.data();
       if(doc.exists && docData.token) {
         if(type == 'newComment') {
@@ -70,6 +77,7 @@ const sendNotification = (ownerId: string, type: string) => {
           }).catch((err) => {
             reject(err);
           });
+          
         } else if (type == "newLike") {
           admin.messaging().sendToDevice(docData.token, {
             data: {
@@ -82,12 +90,16 @@ const sendNotification = (ownerId: string, type: string) => {
           }).catch((err) => {
             reject(err);
           });
+        } else {
+          reject("not found");
         }
+      } else {
+        reject("not found");
       }
     }).catch((err) => {
       reject(err);
-    })
-
+    });
+    resolve("success");
   });
 
 }
@@ -124,17 +136,23 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
           .then(async () => {
 
             if(action == 'like') {
-              await sendNotification(data.data().owner, "newLike");
+              await sendNotification(data.data().owner, "newLike")
+              .then(() => {
+                response.status(200).send('Done');
+              })
+                .catch((error) => {
+                response.status(500).send(error.message);
+              });
             }
 
             response.status(200).send('Done');
           })
-          .catch(error => {
-            response.status(error.code).send(error.message);
+          .catch((error) => {
+            response.status(500).send(error.message);
           })
       })
-      .catch(error => {
-        response.status(error.code).send(error.message);
+      .catch((error) => {
+        response.status(500).send(error.message);
       });
     });
 })
@@ -216,14 +234,14 @@ export const updateFollowersOnPosts = functions.https.onRequest((request, respon
             console.log("Done");
           })
           .catch(error => {
-            response.status(error.code).send(error.message);
+            response.status(500).send(error.message);
           })
         });
 
         response.status(200).send('Done');
       })
       .catch(error => {
-        response.status(error.code).send(error.message);
+        response.status(500).send(error.message);
       });
 
     });

@@ -264,6 +264,8 @@ export class PostFeedPage implements OnInit {
       action: post.data().likes && post.data().likes[firebase.auth().currentUser.uid] == true ? "unlike" : "like"
     }
 
+    console.log(body);
+
     let toast = await this.toastCtrl.create({
       message: "Updating like... Please wait."
     });
