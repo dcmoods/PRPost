@@ -54,13 +54,8 @@ exports.unindexUser = functions.firestore
 
 function sendNotification(ownerId: string, type: string) {
   console.log(ownerId, type);
-  // return new Promise((resolve, reject) =>{
-  //   resolve("It worked!");
-  //   reject("error");
-  // })
   return new Promise((resolve, reject) => {
-    let query = admin.firestore().collection("users").doc(ownerId);
-    
+    const query = admin.firestore().collection("users").doc(ownerId);
     
     query.get().then((doc) => {
       const docData: any = doc.data();
@@ -99,7 +94,7 @@ function sendNotification(ownerId: string, type: string) {
     }).catch((err) => {
       reject(err);
     });
-    resolve("success");
+    //resolve("success");
   });
 
 }
@@ -119,6 +114,7 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
 
     admin.firestore().collection('posts').doc(postId).get()
       .then((data: any) => {
+        const postData = data.data();
         let likesCount: number = data.data().likesCount || 0;
         let likes: any = data.data().likes || [];
         console.log(likes);
@@ -136,16 +132,16 @@ export const updateLikesCount = functions.https.onRequest((request, response) =>
           .then(async () => {
 
             if(action == 'like') {
-              await sendNotification(data.data().owner, "newLike")
-              .then(() => {
+              sendNotification(postData.owner, "newLike").then((result) => {
+                console.log(result);
                 response.status(200).send('Done');
-              })
-                .catch((error) => {
+              }).catch((error) => {
+                console.log(error);
                 response.status(500).send(error.message);
               });
+            } else {
+              response.status(200).send('Done');
             }
-
-            response.status(200).send('Done');
           })
           .catch((error) => {
             response.status(500).send(error.message);
